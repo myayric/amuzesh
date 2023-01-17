@@ -73,7 +73,7 @@ if __name__ == "__main__":
     print("Ветер:", data["wind"])
     print("Следующие дни:")
     for dayweather in data["next_days"]:
-        print("=" * 40, dayweather["name"], "=" * 40)
+        print("«" * 40, dayweather["name"], "»" * 40)
         print("Описание:", dayweather["weather"])
         print(f"Максимальная температура: {dayweather['max_temp']}°C")
         print(f"Минимальная температура: {dayweather['min_temp']}°C")
