@@ -1,15 +1,16 @@
-import now as now
+import telebot
 from bs4 import BeautifulSoup as bs
 import requests
 from datetime import datetime
 
-
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 " \
              "Safari/537.36 "
 # US english
-LANGUAGE = "ru-RU,en;q=0.5"
+LANGUAGE = "ru-RU,ru;q=0.5"
 now1 = datetime.now()
 t = now1.strftime("%H:%M")
+
+bot = telebot.TeleBot('5634867467:AAHl2DC6VAf5jJT1QPDjEhlCR2ZGqFj1B1I')
 
 
 def get_weather_data(url):
@@ -22,7 +23,7 @@ def get_weather_data(url):
     soup = bs(html.text, "html.parser")
     result = {'region': soup.find("div", attrs={"id": "wob_loc"}).text,
               'temp_now': soup.find("span", attrs={"id": "wob_tm"}).text,
-              #'temperature_feels': soup.find("span", attrs={"jsname": "wcyxJ"}).text,
+              # 'temperature_feels': soup.find("div", {"class": "iajBOd"}).text,
               'dayhour': soup.find("div", attrs={"id": "wob_dts"}).text,
               'weather_now': soup.find("span", attrs={"id": "wob_dc"}).text,
               'precipitation': soup.find("span", attrs={"id": "wob_pp"}).text,
@@ -65,17 +66,34 @@ if __name__ == "__main__":
     # get data
     data = get_weather_data(URL)
     # print data
-    print("Погода в городе ", data["region"])
-    print("Сейчас:", t)
-    #print("ашущение:", data["temperature_feels"])
-    print(f"Температура сейчас: {data['temp_now']}°C")
-    print("Описание:", data['weather_now'])
-    print("осадки", data["precipitation"])
-    print("Влажность:", data["humidity"])
-    print("Ветер:", data["wind"])
-    print("Следующие дни:")
+    text = f"Погода в городе {data['region']}\n" \
+           f"Сейчас: {t}\n" \
+           f"Температура сейчас: {data['temp_now']}°C\n" \
+           f"Описание: {data['weather_now']}\n" \
+           f"осадки {data['precipitation']}\n" \
+           f"Влажность: {data['humidity']}\n" \
+           f"Ветер: {data['wind']}\n" \
+           f"Следующие дни:" \
+ \
+    # print(text)
+    text2 = ""
     for dayweather in data["next_days"]:
-        print("«" * 40, dayweather["name"], "»" * 40)
-        print("Описание:", dayweather["weather"])
-        print(f"Максимальная температура: {dayweather['max_temp']}°C")
-        print(f"Минимальная температура: {dayweather['min_temp']}°C")
+
+        text2 = text2 + f"{'+-' * 4} {dayweather['name']} {'-+' * 4} \n" \
+                        f"Максимальная температура: {dayweather['max_temp']}°C\n" \
+                        f"Минимальная температура: {dayweather['min_temp']}°C\n"
+
+    # print(text2)
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, text)
+
+
+@bot.message_handler(commands=['tomorrow'])
+def tomorrow(message):
+    bot.send_message(message.chat.id, text2)
+
+
+bot.polling(none_stop=True)
